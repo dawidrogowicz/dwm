@@ -142,7 +142,7 @@ typedef struct {
 } Rule;
 
 /* function declarations */
-static void applyrules(Client *c);
+static int applyrules(Client *c);
 static int applysizehints(Client *c, int *x, int *y, int *w, int *h, int interact);
 static void arrange(Monitor *m);
 static void arrangemon(Monitor *m);
@@ -276,7 +276,7 @@ static Window root, wmcheckwin;
 struct NumTags { char limitexceeded[LENGTH(tags) > 31 ? -1 : 1]; };
 
 /* function implementations */
-void
+int
 applyrules(Client *c)
 {
 	const char *class, *instance;
@@ -284,6 +284,7 @@ applyrules(Client *c)
 	const Rule *r;
 	Monitor *m;
 	XClassHint ch = { NULL, NULL };
+        int manage = True;
 
 	/* rule matching */
 	c->isfloating = 0;
@@ -298,6 +299,7 @@ applyrules(Client *c)
 		&& (!r->class || strstr(class, r->class))
 		&& (!r->instance || strstr(instance, r->instance)))
 		{
+                        manage = r->tags != 0;
 			c->isfloating = r->isfloating;
 			c->tags |= r->tags;
 			for (m = mons; m && m->num != r->monitor; m = m->next);
@@ -310,6 +312,12 @@ applyrules(Client *c)
 	if (ch.res_name)
 		XFree(ch.res_name);
 	c->tags = c->tags & TAGMASK ? c->tags & TAGMASK : c->mon->tagset[c->mon->seltags];
+
+        if (manage)
+            return True;
+
+        unmanage(c, False);
+        return False;
 }
 
 int
@@ -1037,7 +1045,8 @@ manage(Window w, XWindowAttributes *wa)
 		c->tags = t->tags;
 	} else {
 		c->mon = selmon;
-		applyrules(c);
+		if ( !applyrules(c) )
+                    return;
 	}
 
 	if (c->x + WIDTH(c) > c->mon->mx + c->mon->mw)
