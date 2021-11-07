@@ -193,6 +193,7 @@ static void resize(Client *c, int x, int y, int w, int h, int interact);
 static void resizeclient(Client *c, int x, int y, int w, int h);
 static void resizemouse(const Arg *arg);
 static void restack(Monitor *m);
+static void autorun(void);
 static void run(void);
 static void scan(void);
 static int sendevent(Client *c, Atom proto);
@@ -711,11 +712,9 @@ drawbar(Monitor *m)
 	Client *c;
 
 	/* draw status first so it can be overdrawn by tags later */
-	if (m == selmon) { /* status is only drawn on selected monitor */
-		drw_setscheme(drw, scheme[SchemeNorm]);
-		tw = TEXTW(stext) - lrpad + 2; /* 2px right padding */
-		drw_text(drw, m->ww - tw, 0, tw, bh, 0, stext, 0);
-	}
+  drw_setscheme(drw, scheme[SchemeNorm]);
+  tw = TEXTW(stext) - lrpad + 2; /* 2px right padding */
+  drw_text(drw, m->ww - tw, 0, tw, bh, 0, stext, 0);
 
 	for (c = m->clients; c; c = c->next) {
 		occ |= c->tags;
@@ -1384,6 +1383,12 @@ restack(Monitor *m)
 	}
 	XSync(dpy, False);
 	while (XCheckMaskEvent(dpy, EnterWindowMask, &ev));
+}
+
+void
+autorun(void)
+{
+  system("cd ~/.config/dwm && ./autorun.sh");
 }
 
 void
@@ -2161,6 +2166,7 @@ main(int argc, char *argv[])
 		die("pledge");
 #endif /* __OpenBSD__ */
 	scan();
+	autorun();
 	run();
 	cleanup();
 	XCloseDisplay(dpy);
