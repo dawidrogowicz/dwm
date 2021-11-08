@@ -706,6 +706,10 @@ void
 drawbar(Monitor *m)
 {
 	int x, w, tw = 0;
+  int y_pad = 0;
+  int l_pad = 0;
+  int r_pad = 0;
+  int text_pad = 4;
 	int boxs = drw->fonts->h / 9;
 	int boxw = drw->fonts->h / 6 + 2;
 	unsigned int i, occ = 0, urg = 0;
@@ -713,19 +717,20 @@ drawbar(Monitor *m)
 
 	/* draw status first so it can be overdrawn by tags later */
   drw_setscheme(drw, scheme[SchemeNorm]);
-  tw = TEXTW(stext) - lrpad + 2; /* 2px right padding */
-  drw_text(drw, m->ww - tw, 0, tw, bh, 0, stext, 0);
+  tw = TEXTW(stext) - lrpad + text_pad * 2; /* 2px right padding */
+  drw_text(drw, m->ww - tw - r_pad, y_pad, tw, bh, text_pad, stext, 0);
 
 	for (c = m->clients; c; c = c->next) {
 		occ |= c->tags;
 		if (c->isurgent)
 			urg |= c->tags;
 	}
-	x = 0;
+  /* x = 0; */
+  x = l_pad;
 	for (i = 0; i < LENGTH(tags); i++) {
 		w = TEXTW(tags[i]);
 		drw_setscheme(drw, scheme[m->tagset[m->seltags] & 1 << i ? SchemeSel : SchemeNorm]);
-		drw_text(drw, x, 0, w, bh, lrpad / 2, tags[i], urg & 1 << i);
+		drw_text(drw, x, y_pad, w, bh, lrpad / 2, tags[i], urg & 1 << i);
 		if (occ & 1 << i)
 			drw_rect(drw, x + boxs, boxs, boxw, boxw,
 				m == selmon && selmon->sel && selmon->sel->tags & 1 << i,
@@ -734,20 +739,21 @@ drawbar(Monitor *m)
 	}
 	w = blw = TEXTW(m->ltsymbol);
 	drw_setscheme(drw, scheme[SchemeNorm]);
-	x = drw_text(drw, x, 0, w, bh, lrpad / 2, m->ltsymbol, 0);
+	x = drw_text(drw, x, y_pad, w, bh, lrpad / 2, m->ltsymbol, 0);
+  tw = tw + r_pad;
 
 	if ((w = m->ww - tw - x) > bh) {
 		if (m->sel) {
 			drw_setscheme(drw, scheme[m == selmon ? SchemeSel : SchemeNorm]);
-			drw_text(drw, x, 0, w, bh, lrpad / 2, m->sel->name, 0);
+			drw_text(drw, x, y_pad, w, bh, lrpad / 2, m->sel->name, 0);
 			if (m->sel->isfloating)
 				drw_rect(drw, x + boxs, boxs, boxw, boxw, m->sel->isfixed, 0);
 		} else {
 			drw_setscheme(drw, scheme[SchemeNorm]);
-			drw_rect(drw, x, 0, w, bh, 1, 1);
+			drw_rect(drw, x, y_pad, w, bh, 1, 1);
 		}
 	}
-	drw_map(drw, m->barwin, 0, 0, m->ww, bh);
+  drw_map(drw, m->barwin, l_pad, y_pad, m->ww - l_pad - r_pad, bh);
 }
 
 void
