@@ -6,15 +6,17 @@ static const unsigned int borderpx  = 1;        /* border pixel of windows */
 static const unsigned int snap      = 32;       /* snap pixel */
 static const int showbar            = 1;        /* 0 means no bar */
 static const int topbar             = 1;        /* 0 means bottom bar */
-static const char *fonts[]          = { "noto:size=12" };
-static const char dmenufont[]       = "noto:size=12";
-static const char col_gray1[]       = "#222222";
+static const char *fonts[]          = { "noto:size=11" };
+static const char dmenufont[]       = "noto:size=11";
 static const char col_gray2[]       = "#444444";
 static const char col_gray3[]       = "#bbbbbb";
-static const char col_gray4[]       = "#eeeeee";
+// Imported from colors.h
+// static const char col_gray1[]       = "#222222";
+// static const char col_gray4[]       = "#eeeeee";
+// static const char col_cyan[]       = "#ffcccc";
 static const char *colors[][3]      = {
 	/*               fg         bg         border   */
-	[SchemeNorm] = { col_gray3, col_gray1, col_gray2 },
+  [SchemeNorm] = { col_gray3, col_gray1, col_gray2 },
 	[SchemeSel]  = { col_gray4, col_cyan,  col_cyan  },
 };
 
@@ -64,7 +66,7 @@ static const char *roficmd[]  = { "rofi", "-show", "run", NULL };
 
 static Key keys[] = {
 	/* modifier                     key        function        argument */
-	{ MODKEY|ShiftMask,   		      XK_s,      spawn,          SHCMD("import -window $(xwininfo | awk '/.*Window id:.*/ { print $4 }') ~/Pictures/$(date '+%Y%m%d-%H%M%S').png") },
+	{ MODKEY|ShiftMask,   		      XK_s,      spawn,          SHCMD("flameshot gui") },
 	{ Alt_L|ShiftMask,             	XK_e,      spawn,          SHCMD("wpg -z $(wpg -l) && wpg -s $(wpg -c)") },
 	{ Alt_L|ShiftMask,             	XK_r,      spawn,          SHCMD("/home/dawid/.scripts/setRandomTheme.sh") },
 	{ Alt_L,                       	XK_d,      spawn,          {.v = roficmd } },
