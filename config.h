@@ -1,5 +1,6 @@
 /* See LICENSE file for copyright and license details. */
 #include "colors.h"
+#include <X11/XF86keysym.h>
 
 /* appearance */
 static const unsigned int borderpx  = 1;        /* border pixel of windows */
@@ -21,16 +22,25 @@ static const char *colors[][3]      = {
 };
 
 /* tagging */
-static const char *tags[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9" };
+static const char *tags[] = { "1", "2", "3" };
 
 static const Rule rules[] = {
 	/* xprop(1):
 	 *	WM_CLASS(STRING) = instance, class
 	 *	WM_NAME(STRING) = title
 	 */
-	/* class            instance    title       tags mask     isfloating   monitor */
-	{ "Gimp",           NULL,       NULL,       0,            1,           -1 },
-	{ "Brave-browser",  NULL,       NULL,       0,            0,           -1 },
+	/* class            instance    title           tags mask     isfloating   monitor */
+  { "Gimp",           NULL,       NULL,           1,            1,            0 },
+  { "Firefox",        NULL,       NULL,           1,            0,            1 },
+  { "Brave-browser",  NULL,       NULL,           1,            0,            1 },
+  { "discord",        NULL,       NULL,           1,            0,            1 },
+  { "ffxiv_dx11.exe", NULL,       NULL,           2,            0,            0 },
+  { "Lutris",         NULL,       NULL,           1,            1,            1 },
+  { "Steam",          NULL,       NULL,           2,            0,            1 },
+  { "PCSX2",          NULL,       NULL,           2,            0,            1 },
+  { "Spotify",        NULL,       NULL,           2,            0,            1 },
+  { "Spotify",        NULL,       "Steam - News", 2,            0,            1 },
+  { "obs",            NULL,       NULL,           2,            0,            1 },
 };
 
 /* layout(s) */
@@ -64,44 +74,56 @@ static const char *dmenucmd[] = { "dmenu_run", "-m", dmenumon, "-fn", dmenufont,
 static const char *termcmd[]  = { "kitty", "-c", "/home/dawid/.config/kitty/kitty.conf", NULL };
 static const char *roficmd[]  = { "rofi", "-show", "run", NULL };
 
+static const char *volume_down[]  = { "pactl", "set-sink-volume", "@DEFAULT_SINK@", "-10%", NULL };
+static const char *volume_up[]  = { "pactl", "set-sink-volume", "@DEFAULT_SINK@", "+10%", NULL };
+static const char *volume_mute[]  = { "pactl", "set-sink-mute", "@DEFAULT_SINK@", "toggle", NULL };
+
+static const char *media_prev[]  = { "playerctl", "previous", NULL };
+static const char *media_next[]  = { "playerctl", "next", NULL };
+static const char *media_toggle[]  = { "playerctl", "play-pause", NULL };
+
+static const char *flameshot[]  = { "flameshot", "gui", NULL };
+
 static Key keys[] = {
-	/* modifier                     key        function        argument */
-	{ MODKEY|ShiftMask,   		      XK_s,      spawn,          SHCMD("flameshot gui") },
-	{ Alt_L|ShiftMask,             	XK_e,      spawn,          SHCMD("wpg -z $(wpg -l) && wpg -s $(wpg -c)") },
-	{ Alt_L|ShiftMask,             	XK_r,      spawn,          SHCMD("/home/dawid/.scripts/setRandomTheme.sh") },
-	{ Alt_L,                       	XK_d,      spawn,          {.v = roficmd } },
-	{ Alt_L,			                  XK_Return, spawn,          {.v = termcmd } },
-	{ MODKEY,                       XK_b,      togglebar,      {0} },
-	{ MODKEY,                       XK_j,      focusstack,     {.i = +1 } },
-	{ MODKEY,                       XK_k,      focusstack,     {.i = -1 } },
-	{ MODKEY,                       XK_i,      incnmaster,     {.i = +1 } },
-	{ MODKEY,                       XK_d,      incnmaster,     {.i = -1 } },
-	{ MODKEY,                       XK_h,      setmfact,       {.f = -0.05} },
-	{ MODKEY,                       XK_l,      setmfact,       {.f = +0.05} },
-	{ MODKEY|ShiftMask,             XK_Return, zoom,           {0} },
-	{ MODKEY,                       XK_Tab,    view,           {0} },
-	{ MODKEY|ShiftMask,             XK_c,      killclient,     {0} },
-	{ MODKEY,                       XK_t,      setlayout,      {.v = &layouts[0]} },
-	{ MODKEY,                       XK_f,      setlayout,      {.v = &layouts[1]} },
-	{ MODKEY,                       XK_m,      setlayout,      {.v = &layouts[2]} },
-	{ MODKEY,                       XK_space,  setlayout,      {0} },
-	{ MODKEY|ShiftMask,             XK_space,  togglefloating, {0} },
-	{ MODKEY,                       XK_0,      view,           {.ui = ~0 } },
-	{ MODKEY|ShiftMask,             XK_0,      tag,            {.ui = ~0 } },
-	{ MODKEY,                       XK_comma,  focusmon,       {.i = -1 } },
-	{ MODKEY,                       XK_period, focusmon,       {.i = +1 } },
-	{ MODKEY|ShiftMask,             XK_comma,  tagmon,         {.i = -1 } },
-	{ MODKEY|ShiftMask,             XK_period, tagmon,         {.i = +1 } },
-	TAGKEYS(                        XK_1,                      0)
-	TAGKEYS(                        XK_2,                      1)
-	TAGKEYS(                        XK_3,                      2)
-	TAGKEYS(                        XK_4,                      3)
-	TAGKEYS(                        XK_5,                      4)
-	TAGKEYS(                        XK_6,                      5)
-	TAGKEYS(                        XK_7,                      6)
-	TAGKEYS(                        XK_8,                      7)
-	TAGKEYS(                        XK_9,                      8)
-	{ MODKEY|ShiftMask,             XK_q,      quit,           {0} },
+	/* modifier           key                       function        argument */
+	{ 0,         		      XF86XK_AudioMute,         spawn,          {.v = volume_mute} },
+	{ 0,         		      XF86XK_AudioLowerVolume,  spawn,          {.v = volume_down} },
+	{ 0,         		      XF86XK_AudioRaiseVolume,  spawn,          {.v = volume_up} },
+	{ 0,         		      XF86XK_AudioPlay,         spawn,          {.v = media_toggle} },
+	{ 0,         		      XF86XK_AudioPrev,         spawn,          {.v = media_prev } },
+	{ 0,                  XF86XK_AudioNext,         spawn,          {.v = media_next } },
+	{ MODKEY|ShiftMask,   XK_s,                     spawn,          {.v = flameshot } },
+	{ Alt_L|ShiftMask,    XK_e,                     spawn,          SHCMD("wpg -z $(wpg -l) && wpg -s $(wpg -c)") },
+	{ Alt_L|ShiftMask,    XK_r,                     spawn,          SHCMD("/home/dawid/.scripts/setRandomTheme.sh") },
+	{ Alt_L,              XK_d,                     spawn,          {.v = roficmd } },
+	{ Alt_L,			        XK_Return,                spawn,          {.v = termcmd } },
+	{ MODKEY,             XK_b,                     togglebar,      {0} },
+	{ MODKEY,             XK_Down,                  focusstack,     {.i = +1 } },
+	{ MODKEY,             XK_Up,                    focusstack,     {.i = -1 } },
+	{ MODKEY,             XK_j,                     focusstack,     {.i = +1 } },
+	{ MODKEY,             XK_k,                     focusstack,     {.i = -1 } },
+	{ MODKEY,             XK_i,                     incnmaster,     {.i = +1 } },
+	{ MODKEY,             XK_d,                     incnmaster,     {.i = -1 } },
+	{ MODKEY,             XK_h,                     setmfact,       {.f = -0.05} },
+	{ MODKEY,             XK_l,                     setmfact,       {.f = +0.05} },
+	{ MODKEY|ShiftMask,   XK_Return,                zoom,           {0} },
+	{ MODKEY,             XK_Tab,                   view,           {0} },
+	{ MODKEY,             XK_q,                     killclient,     {0} },
+	{ MODKEY,             XK_t,                     setlayout,      {.v = &layouts[0]} },
+	{ MODKEY,             XK_f,                     setlayout,      {.v = &layouts[1]} },
+	{ MODKEY,             XK_m,                     setlayout,      {.v = &layouts[2]} },
+	{ MODKEY,             XK_space,                 setlayout,      {0} },
+	{ MODKEY|ShiftMask,   XK_space,                 togglefloating, {0} },
+	{ MODKEY,             XK_0,                     view,           {.ui = ~0 } },
+	{ MODKEY|ShiftMask,   XK_0,                     tag,            {.ui = ~0 } },
+	{ MODKEY,             XK_Left,                  focusmon,       {.i = -1 } },
+	{ MODKEY,             XK_Right,                 focusmon,       {.i = +1 } },
+	{ MODKEY|ShiftMask,   XK_Left,                  tagmon,         {.i = -1 } },
+	{ MODKEY|ShiftMask,   XK_Right,                 tagmon,         {.i = +1 } },
+	TAGKEYS(              XK_1,                     0)
+	TAGKEYS(              XK_2,                     1)
+	TAGKEYS(              XK_3,                     2)
+	{ MODKEY|ShiftMask,   XK_q,                     quit,           {0} },
 };
 
 /* button definitions */
